@@ -4,4 +4,4 @@ This tries- occasionally successfully- to work out which USB/serial port is conn
 
 The output is basically a timestamped line showing the meter's current range and value. Alternatively, the -F or --format parameter can take a printf-style string, in which case the value (and only the value) is output formatted as specified. If the -F parameter is @, then raw hex-formatted packets are output.
 
-In the general case, use %x@yBzd or %x@yLzd for offset x and y bytes of big/little-endian data with C format %zd etc. There's lots more possibilities to allow the reading to be scaled offset using (postfix, RPN) operations, please refer to the source for details.
+In the general case, use %x@yBzd or %x@yLzd for offset x and y bytes of big/little-endian data with C format %zd etc. There's lots more possibilities to allow the reading to be scaled and offset using (postfix, RPN) operations, please refer to the source for details.
