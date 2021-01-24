@@ -69,6 +69,38 @@ begin
 end { cat } ;
 
 
+(* Prior to FPC 3.2.0 FileExists() also matched directories. This function is
+  optimised by version to avoid a spurious call if FileExists() fails on FPC
+  3.0.4 or older.
+*)
+function fileOrDirectoryExists(const name: RawByteString; followLink: boolean= true): boolean;
+
+begin
+{$ifndef VER3_2 }
+  result := FileExists(name, followLink)
+{$else          }
+  result := FileExists(name, followLink) or DirectoryExists(name, followLink)
+{$endif VER3_2  }
+end { fileOrDirectoryExists } ;
+
+
+procedure DebugWriteF(fmt: string; values: array of const);
+
+// See FormatEx() in e.g. Borg-NG for possible enhancements.
+
+var
+  i: integer;
+
+begin
+{  i := Pos('\n', fmt);
+  if i > 0 then begin
+    SetLength(fmt, i - 1);
+    WriteLn(ErrOutput, Format(fmt, values))
+  end else
+    Write(ErrOutput, Format(fmt, values))  }
+end { DebugWriteF } ;
+
+
 type
   TWalkTestPredicate= function(const dir: string; const name: string;
                         const content: string; const extra: string;
@@ -161,10 +193,14 @@ begin
             if wtp2(dir, candidate, content, extra, hint) then
               exit(dir + candidate)
             else begin end              (* Watch for dangling else here         *)
-          else
-            if FileExists(dir + candidate + '/' + content) then
+          else begin
+            DebugWriteF('Test existence "%s" "%s" / "%s"\n', [dir, candidate, content]);
+            if fileOrDirectoryExists(dir + candidate + '/' + content) then begin
+              DebugWriteF('Test predicate "%s" "%s" "%s" "%s"\n', [dir, candidate, content, extra]);
               if wtp2(dir, candidate, content, extra, hint) then
-                exit(dir + candidate + '/');
+                exit(dir + candidate + '/')
+            end
+          end;
 
 (* We've got a subdirectory but either it doesn't match the pattern or it lacks *)
 (* the expected content: recurse.                                               *)
@@ -251,7 +287,7 @@ begin
 (* but might be distressingly relative.                                         *)
 
   scratch := dir + name + '/' + content;
-  if not FileExists(scratch) then
+  if not fileOrDirectoryExists(scratch) then
     scratch := ''
   else
     scratch := cat(scratch);
@@ -295,7 +331,7 @@ begin
 (* but might be distressingly relative.                                         *)
 
   scratch := dir + name + '/' + content;
-  if not FileExists(scratch) then
+  if not fileOrDirectoryExists(scratch) then
     scratch := ''
   else
     scratch := cat(scratch);
@@ -600,16 +636,16 @@ begin
 (* investigate every port in depth it doesn't accumulate serial numbers etc.    *)
 
   if hint < 0 then begin
-  //  DebugWriteF('Testing port %s against pattern %s\n', [portName, Backend.PortName()]);
+    DebugWriteF('Testing port %s against pattern %s\n', [portName, portName]);
     if Pos(portName, testPortName) = 0 then
       exit(false);
-  //  DebugWriteF('Testing against driver name %s\n', [Backend.PortDriverName()]);
+    DebugWriteF('Testing against driver name %s\n', [portDriverName]);
     if not usingDriver(testPortName, portDriverName, hint) then
       exit(false);
-  //  DebugWriteF('Testing against product description %s\n', [Backend.PortProductDescription()]);
+    DebugWriteF('Testing against product description %s\n', [portProductDescription]);
     if not usingProduct(testPortName, portProductDescription, hint) then
       exit(false);
-  //  DebugWriteF('Testing against serial description %s\n', [Backend.PortSerialDescription()]);
+    DebugWriteF('Testing against serial description %s\n', [portSerialDescription]);
     if not usingSerial(testPortName, portSerialDescription, hint) then
       exit(false)
   end else begin
