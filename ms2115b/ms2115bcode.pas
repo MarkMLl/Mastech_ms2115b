@@ -54,6 +54,7 @@ type
     PairSplitterLRRight: TPairSplitterSide;
     PairSplitterLTBTop: TPairSplitterSide;
     PairSplitterLTBBottom: TPairSplitterSide;
+    SaveDialog1: TSaveDialog;
     StringGridLog: TStringGrid;
     ToolBar1: TToolBar;
     ToolButtonFileSave: TToolButton;
@@ -69,6 +70,7 @@ type
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormCreate(Sender: TObject);
     procedure LabelChartSizeDblClick(Sender: TObject);
+    procedure MenuItemExportImagePngClick(Sender: TObject);
     procedure MenuItemFileExitClick(Sender: TObject);
     procedure MenuItemFileNewClick(Sender: TObject);
     procedure MenuItemFileOpenClick(Sender: TObject);
@@ -131,6 +133,7 @@ uses
   Serial, BaseUnix, Termio, ConsoleApp, LocateCp210xPort, IniFilesAbout, StrUtils;
 
 const
+  ProjName= 'MS2115B';
   Ms2115bCodeMagicNumber= 2020012719;
 
 (********************************************************************************)
@@ -364,13 +367,17 @@ begin
 
   widthTweak := ctrl.Width - standardSizes[nearestIndex].widthPx;
   heightTweak := ctrl.Height - standardSizes[nearestIndex].heightPx;
-  result := Format('%dx%d (%s ', [ctrl.Width, ctrl.Height, standardSizes[nearestIndex].name]);
-  if ctrl.Width >= standardSizes[nearestIndex].widthPx then
-    result += '+';
-  result += IntToStr(widthTweak) + 'x';
-  if ctrl.Height >= standardSizes[nearestIndex].heightPx then
-    result += '+';
-  result += IntToStr(heightTweak) + ')'
+  result := Format('%d×%d (%s', [ctrl.Width, ctrl.Height, standardSizes[nearestIndex].name]);
+  if (widthTweak <> 0) or (heightTweak <> 0) then begin
+    result += ' ';
+    if ctrl.Width >= standardSizes[nearestIndex].widthPx then
+      result += '+';
+    result += IntToStr(widthTweak) + '×';
+    if ctrl.Height >= standardSizes[nearestIndex].heightPx then
+      result += '+';
+    result += IntToStr(heightTweak)
+  end;
+  result += ')'
 end { TMs2115bForm.GraphicSize } ;
 
 
@@ -442,6 +449,42 @@ begin
   Application.MainForm.Height := Application.MainForm.Height - HeightTweak;
   heightTweak := 0
 end { TMs2115bForm.LabelChartSizeDblClick } ;
+
+
+procedure TMs2115bForm.MenuItemExportImagePngClick(Sender: TObject);
+
+var
+  nameBlank: boolean;
+  png: TPortableNetworkGraphic;
+  everything: TRect;
+
+begin
+  nameBlank := Trim(SaveDialog1.Filename) = '';
+  if nameBlank then
+    SaveDialog1.Filename := projName + '_' + StringReplace(IsoNow(), ' ', 'T', [rfReplaceAll]);
+  SaveDialog1.DefaultExt := 'png';
+
+(* Possibly replace this later with a custom setup form to select compression   *)
+(* etc.                                                                         *)
+
+  if SaveDialog1.Execute then begin
+    png := TPortableNetworkGraphic.Create;
+    try
+      png.Width := Chart1.Width;
+      png.Height := Chart1.Height;
+      everything.Left := 0;
+      everything.Top := 0;
+      everything.Right := Chart1.Width - 1;
+      everything.bottom := Chart1.Height - 1;
+      png.Canvas.CopyRect(everything, Chart1.Canvas, everything);
+      png.SaveToFile(SaveDialog1.Filename)
+    finally
+      png.Free
+    end
+  end;
+  if nameBlank then
+    SaveDialog1.Filename := ''
+end { TMs2115bForm.MenuItemExportImagePngClick } ;
 
 
 procedure TMs2115bForm.MenuItemFileOpenClick(Sender: TObject);

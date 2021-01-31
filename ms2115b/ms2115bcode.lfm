@@ -299,10 +299,13 @@ object Ms2115bForm: TMs2115bForm
   object LabelChartSize: TLabel
     Left = 320
     Height = 1
+    Hint = 'Double-click on this to snap graphic size'
     Top = 8
     Width = 1
     Color = clFuchsia
     ParentColor = False
+    ParentShowHint = False
+    ShowHint = True
     Transparent = False
     OnDblClick = LabelChartSizeDblClick
   end
@@ -336,7 +339,7 @@ object Ms2115bForm: TMs2115bForm
         Caption = 'Export image'
         object MenuItemExportImagePng: TMenuItem
           Caption = 'PNG...'
-          Enabled = False
+          OnClick = MenuItemExportImagePngClick
         end
         object MenuItemExportImageGif: TMenuItem
           Caption = 'GIF...'
@@ -607,6 +610,10 @@ object Ms2115bForm: TMs2115bForm
     DateTimeFormat = 'nn:ss'
     Steps = [dtsMinute, dtsSecond]
     Left = 576
+    Top = 7
+  end
+  object SaveDialog1: TSaveDialog
+    Left = 379
     Top = 7
   end
 end
