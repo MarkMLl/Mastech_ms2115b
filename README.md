@@ -9,3 +9,5 @@ In a more general case, use %x@yBzd or %x@yLzd to go to offset x in the received
 The console-only variant of the program may be compiled using the included makefile. The GUI variant, which can also run as a console program, may be compiled using the included Lazarus project (.lpi) file. Any references to the Lazarus source files are cosmetic, and may be excised (see inifilesabout.pas) without affecting core functionality.
 
 The GUI variant of the program has menu entries for logging data values as they arrive and dumping accumulated data (around 1000 lines of text are saved internally and around 100 graphical points). The code to implement these facilities has not yet been done, in part because I've not worked out what formats I want.
+
+![Screenshot](ms2115b.png)
