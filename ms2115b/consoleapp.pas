@@ -989,12 +989,20 @@ end { RunConsoleApp2 } ;
 {$macro on  }
 {$define IS_SCPI_SYNTAX__:= Pos(' SYNTAX', command) = Length(command) - Length(' SYNTAX') + 1 }
 {$define SCPI_COMMAND_NO_SYNTAX__:= Copy(command, 1, Length(command) - Length(' SYNTAX')) }
+{$define SYNTAX_REQUESTED_FOR__:= Copy(SCPI_COMMAND_NO_SYNTAX__, Pos(' ', SCPI_COMMAND_NO_SYNTAX__) + 1, MaxInt) }
 
 function scpiDoNothing(scpi: TScpiServer; const {%H-}command: AnsiString): boolean;
 
 begin
   result := true;
-  if not IS_SCPI_SYNTAX__ then
+  if IS_SCPI_SYNTAX__ then begin
+    if scpi.Prompt then
+      scpi.Respond('  ', false);
+    if Pos(' ', SCPI_COMMAND_NO_SYNTAX__) > 0 then
+      scpi.Respond('No syntax for "' + SYNTAX_REQUESTED_FOR__ + '"', true)
+    else
+      scpi.Respond('No syntax for "' + SCPI_COMMAND_NO_SYNTAX__ + '"', true)
+  end else
     scpi.Respond('Do not understand "' + command + '"', true)
 end { scpiDoNothing } ;
 
@@ -1033,16 +1041,26 @@ begin
 end { scpiDoIdentify } ;
 
 
-{
-https://github.com/andrey-nakin/v7-28-arduino/blob/master/doc/v7-28-arduino.tex
-suggests that  SENSe:FUNCtion  would be a good start, indicating the current
-switch setting on the meter. Also see the similar commands in
-https://scdn.rohde-schwarz.com/ur/pws/dl_downloads/dl_common_library/dl_manuals/gb_1/h/hmc8012_1/HMC8012_SCPI_ProgrammersManual_en_01.pdf
-
-Also https://raw.githubusercontent.com/TheHWcave/OWON-XDM1041/main/SCPI/XDM1041-SCPI.pdf
-which appears to put FUNCtion? at the top level. I suspect this is also used
-for a similar meter sold by Farnell.
-}
+(* SYSTem:HELP:SYNTAX? results in each of the registered commands being passed  *)
+(* ' SYNTAX' (note leading space) as its parameter. Hence                       *)
+(*                                                                              *)
+(* Returns the syntax of the specified command                                  *)
+(*                                                                              *)
+(* Syntax SYSTem:HELP:SYNTax? <command_header>                                  *)
+(*                                                                              *)
+(* Example SYST:HELP:SYNT? INP                                                  *)
+(*                                                                              *)
+(* The above command returns                                                    *)
+(*                                                                              *)
+(*      INPut#:COUPling GND|DC\n                                                *)
+(*      INPut#:COUPling? [OPTions|DEFault]\n                                    *)
+(*      INPut#:GAIN MINimum|MAXimum|                                            *)
+(*                  UP|DOWN|DEFault|<value>\n                                   *)
+(*      INPut#:GAIN? [OPTions|DEFault]\n                                        *)
+(*                                                                              *)
+(* Assume that the pattern to be matched here is strictly that returned by an   *)
+(* earlier SYSTem:HELP:HEADers? command. Note the special cases here to handle  *)
+(* the HEADers and SYNTax commands themselves.                                  *)
 
 
 function scpiDoReportFunction1(scpi: TScpiServer; const {%H-}command: AnsiString): boolean;
@@ -1052,10 +1070,9 @@ begin
   if IS_SCPI_SYNTAX__ then begin
     if scpi.Prompt then
       scpi.Respond('  ', false);
-    scpi.Respond(SCPI_COMMAND_NO_SYNTAX__ + ' (No instrument attached.)', true)
-  end else begin
+    scpi.Respond(SCPI_COMMAND_NO_SYNTAX__ + ' Report Ch1 function and range.', true)
+  end else
     scpi.Respond(scpiFunc1, true)
-  end
 end { scpiDoReportFunction1 } ;
 
 
@@ -1066,10 +1083,9 @@ begin
   if IS_SCPI_SYNTAX__ then begin
     if scpi.Prompt then
       scpi.Respond('  ', false);
-    scpi.Respond(SCPI_COMMAND_NO_SYNTAX__ + ' (No instrument attached.)', true)
-  end else begin
+    scpi.Respond(SCPI_COMMAND_NO_SYNTAX__ + ' Report Ch2 function and range.', true)
+  end else
     scpi.Respond(scpiFunc2, true)
-  end
 end { scpiDoReportFunction2 } ;
 
 
@@ -1080,10 +1096,9 @@ begin
   if IS_SCPI_SYNTAX__ then begin
     if scpi.Prompt then
       scpi.Respond('  ', false);
-    scpi.Respond(SCPI_COMMAND_NO_SYNTAX__ + ' (No instrument attached.)', true)
-  end else begin
+    scpi.Respond(SCPI_COMMAND_NO_SYNTAX__ + ' Report Ch1 scaled value.', true)
+  end else
     scpi.Respond(scpiValue1, true)
-  end
 end { scpiDoReportValue1 } ;
 
 
@@ -1094,10 +1109,9 @@ begin
   if IS_SCPI_SYNTAX__ then begin
     if scpi.Prompt then
       scpi.Respond('  ', false);
-    scpi.Respond(SCPI_COMMAND_NO_SYNTAX__ + ' (No instrument attached.)', true)
-  end else begin
+    scpi.Respond(SCPI_COMMAND_NO_SYNTAX__ + ' Report Ch2 scaled value.', true)
+  end else
     scpi.Respond(scpiValue2, true)
-  end
 end { scpiDoReportValue2 } ;
 
 
@@ -1264,3 +1278,4 @@ end { RunConsoleApp };
 initialization
   Assert(SizeOf(smallint) = 2)
 end.
+
