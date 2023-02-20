@@ -16,7 +16,7 @@ uses
   Forms, tachartlazaruspkg, Ms2115bCode,
   { you can add units after this }
 {$endif LCL }
-  ConsoleApp, ScpiServer, LocateCp210xPort;
+  ConsoleApp, ScpiServer, IPAddressUtils, LocateCp210xPort;
 
 var
   Ms2115bPort: string= '';

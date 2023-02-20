@@ -1221,8 +1221,19 @@ begin
         WriteLn(stderr, '# Starting SCPI daemon on standard I/O')
       else
         WriteLn(stderr, '# Starting SCPI daemon on port ', scpiPort);
+
+(* Even though we're not showing this host's IP addresses yet, we can usefully  *)
+(* display the port number early so that if the daemon can't be started we know *)
+(* the potential clash.                                                         *)
+
     scpi := TScpiServer.Create(scpiPort);
     if Assigned(scpi) then begin
+      if debugLevel > 0 then
+        if (scpiPort > -1) and (scpi.OwnAddr <> '') then
+          if Pos(' ', scpi.OwnAddr) > 0 then
+            WriteLn(StdErr, '# Listening on IP addresses ', scpi.OwnAddr)
+          else
+            WriteLn(StdErr, '# Listening on IP address ', scpi.OwnAddr);
       scpiLock := TCriticalSection.Create;
       scpi.BlankIsHelp := true;
       scpi.HelpIsHelp := true;
@@ -1248,7 +1259,7 @@ begin
 (* thread manager being imported into the main unit at compilation, then it's   *)
 (* necessary to call Poll() regularly. Don't expect this to perform well.       *)
 
-     if not scpi.Run() then begin
+      if not scpi.Run() then begin
         result := 10;
         if scpiPort < 0 then
           WriteLn(stderr, 'Unable to run SCPI server on stdin')

@@ -62,6 +62,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="ScpiServer"/>
       </Unit>
+      <Unit>
+        <Filename Value="../scpisrv/trunk/ipaddressutils.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="IPAddressUtils"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
