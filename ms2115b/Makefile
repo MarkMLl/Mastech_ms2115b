@@ -46,11 +46,12 @@ $(SERIALCOMMS)/locatecp210xport.o: any $(SERIALCOMMS)/locatecp210xport.pas
 $(SERIALCOMMS)/netlink.o: any $(SERIALCOMMS)/netlink.pas
 $(SCPISRV)/scpiserver.o: any $(SCPISRV)/scpiserver.pas
 $(SCPISRV)/scpiparser.o: any $(SCPISRV)/scpiparser.pas
+$(SCPISRV)/paddressutils.o: any $(SCPISRV)/ipaddressutils.pas
 
 $(TARGET): any $(INIFILES)/inifilesabout.pas \
   $(SERIALCOMMS)/locatecp210xport.pas $(SERIALCOMMS)/locateports.pas \
   $(SERIALCOMMS)/netlink.pas $(SCPISRV)/scpiserver.pas $(SCPISRV)/scpiparser.pas \
-  consoleapp.pas $_.lpr 
+  $(SCPISRV)/ipaddressutils.pas consoleapp.pas $_.lpr 
 	$(FPC) $(FPCFLAGS) $(DEFINES) -Fu$(INIFILES) -Fu$(SERIALCOMMS) \
   -Fu$(SCPISRV) -o$(TARGET) $_.lpr 
 
@@ -66,7 +67,8 @@ clean:
 	rm -f $(SERIALCOMMS)/netlink.o $(SERIALCOMMS)/netlink.ppu
 	rm -f $(SCPISRV)/scpiserver.o $(SCPISRV)/scpiserver.ppu
 	rm -f $(SCPISRV)/scpiparser.o $(SCPISRV)/scpiparser.ppu
-        
+	rm -f $(SCPISRV)/ipaddressutils.o $(SCPISRV)/ipaddressutils.ppu
+
 distclean: clean
 	rm -f $(TARGET)* *lps $_.tar $_.tar.gz $_.tgz $_.zip
 
@@ -74,8 +76,8 @@ pubclean: distclean
 	rm -rf backup lib *~
 
 PUBFILES=../$_/* ../common/* $(INIFILES)/inifilesabout.pas \
-  $(SERIALCOMMS)/locateports.pas $(SERIALCOMMS)/locatecp210xport.pas \
-  $(SERIALCOMMS)/netlink.pas $(SCPISRV)/scpiserver.pas $(SCPISRV)/scpiparser.pas
+  $(SERIALCOMMS)/locateports.pas $(SERIALCOMMS)/locatecp210xport.pas $(SERIALCOMMS)/netlink.pas \
+  $(SCPISRV)/scpiserver.pas $(SCPISRV)/scpiparser.pas $(SCPISRV)/ipaddressutils.pas
 
 tar: pubclean
 	tar chf $_.tar $(PUBFILES)
